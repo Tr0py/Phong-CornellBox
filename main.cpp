@@ -14,6 +14,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
+void my_sphere(float radius, unsigned int rings, unsigned int sectors);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -117,15 +118,14 @@ int main()
         -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
         -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+        -0.5f,  0.8f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.8f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.8f,  0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.8f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.8f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.8f, -0.5f,  0.0f,  1.0f,  0.0f
     };
-	/*
-    float vertices[] = {
+    float verticesOut[] = {
         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, 1.0f,
          0.5f, -0.5f, -0.5f,  0.0f,  0.0f, 1.0f,
          0.5f,  0.5f, -0.5f,  0.0f,  0.0f, 1.0f,
@@ -133,12 +133,14 @@ int main()
         -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, 1.0f,
         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, 1.0f,
 
+		/*
         -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  -1.0f,
          0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  -1.0f,
          0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  -1.0f,
          0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  -1.0f,
         -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  -1.0f,
         -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  -1.0f,
+		*/
 
         -0.5f,  0.5f,  0.5f, 1.0f,  0.0f,  0.0f,
         -0.5f,  0.5f, -0.5f, 1.0f,  0.0f,  0.0f,
@@ -168,7 +170,6 @@ int main()
         -0.5f,  0.5f,  0.5f,  0.0f,  -1.0f,  0.0f,
         -0.5f,  0.5f, -0.5f,  0.0f,  -1.0f,  0.0f
     };
-	*/
     // first, configure the cube's VAO (and VBO)
     unsigned int VBO, cubeVAO;
     glGenVertexArrays(1, &cubeVAO);
@@ -186,6 +187,22 @@ int main()
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    // 1.5, configure the cube's VAO (and VBO)
+    unsigned int outVBO, outVAO;
+    glGenVertexArrays(1, &outVAO);
+    glGenBuffers(1, &outVBO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, outVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticesOut), verticesOut, GL_STATIC_DRAW);
+
+    glBindVertexArray(outVAO);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // normal attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // second, configure the light's VAO (VBO stays the same; the vertices are the same for the light object which is also a 3D cube)
     unsigned int lightVAO;
@@ -236,9 +253,8 @@ int main()
         lightingShader.setMat4("model", model);
 
         // render the cube
-        glBindVertexArray(cubeVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-		glutSolidSphere(1.0,300,16);
+        glBindVertexArray(outVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 30);
 
 		//START------------------------
         // be sure to activate shader when setting uniforms/drawing objects
@@ -288,6 +304,7 @@ int main()
     glDeleteVertexArrays(1, &cubeVAO);
     glDeleteVertexArrays(1, &lightVAO);
     glDeleteBuffers(1, &VBO);
+	
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
@@ -348,3 +365,45 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     camera.ProcessMouseScroll(yoffset);
 }
+
+/*
+void my_sphere(float radius, unsigned int rings, unsigned int sectors)
+{
+	float const R = 1./(float)(rings-1);
+    float const S = 1./(float)(sectors-1);
+    int r, s;
+
+    vertices.resize(rings * sectors * 3);
+    normals.resize(rings * sectors * 3);
+    texcoords.resize(rings * sectors * 2);
+    std::vector<GLfloat>::iterator v = vertices.begin();
+    std::vector<GLfloat>::iterator n = normals.begin();
+    std::vector<GLfloat>::iterator t = texcoords.begin();
+    for(r = 0; r < rings; r++) for(s = 0; s < sectors; s++) {
+            float const y = sin( -M_PI_2 + M_PI * r * R );
+            float const x = cos(2*M_PI * s * S) * sin( M_PI * r * R );
+            float const z = sin(2*M_PI * s * S) * sin( M_PI * r * R );
+
+            *t++ = s*S;
+            *t++ = r*R;
+
+            *v++ = x * radius;
+            *v++ = y * radius;
+            *v++ = z * radius;
+
+            *n++ = x;
+            *n++ = y;
+            *n++ = z;
+    }
+
+    indices.resize(rings * sectors * 4);
+    std::vector<GLushort>::iterator i = indices.begin();
+    for(r = 0; r < rings; r++) for(s = 0; s < sectors; s++) {
+            *i++ = r * sectors + s;
+            *i++ = r * sectors + (s+1);
+            *i++ = (r+1) * sectors + (s+1);
+            *i++ = (r+1) * sectors + s;
+    }
+
+}
+*/
