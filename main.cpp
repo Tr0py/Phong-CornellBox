@@ -1,3 +1,5 @@
+#define STB_IMAGE_IMPLEMENTATION
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -7,6 +9,9 @@
 
 #include "shader_m.h"
 #include "camera.h"
+#include "objloader.hpp"
+#include "model.h"
+
 
 #include <iostream>
 
@@ -21,7 +26,7 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 0.7f));
+Camera camera(glm::vec3(0.0f, 0.0f, 1.3f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -118,12 +123,12 @@ int main()
         -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
         -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-        -0.5f,  0.8f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.8f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.8f,  0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.8f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.8f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.8f, -0.5f,  0.0f,  1.0f,  0.0f
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
     };
     float verticesOut[] = {
         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, 1.0f,
@@ -214,6 +219,43 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+	// ------------------ OBJ LOADER -------------------
+	// Read our .obj file
+	//std::vector<glm::vec3> verticesObj;
+	//std::vector<glm::vec2> uvsObj;
+	//std::vector<glm::vec3> normalsObj; // Won't be used at the moment.
+	//bool res = loadOBJ("./sphere.obj", verticesObj, uvsObj, normalsObj);
+	//printf("123123123123\n");
+
+	//GLuint vertexbuffer;
+	//glGenBuffers(1, &vertexbuffer);
+	//glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	//glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
+
+	//GLuint uvbuffer;
+	//glGenBuffers(1, &uvbuffer);
+	//glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+	//glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
+
+    //unsigned int objVBO, objVAO;
+    //glGenVertexArrays(1, &objVAO);
+    //glGenBuffers(1, &objVBO);
+
+    //glBindBuffer(GL_ARRAY_BUFFER, objVBO);
+	//glBufferData(GL_ARRAY_BUFFER, verticesObj.size() * sizeof(glm::vec3), &verticesObj[0], GL_STATIC_DRAW);
+
+    //glBindVertexArray(objVAO);
+
+    //// position attribute
+	//glBufferData(GL_ARRAY_BUFFER, verticesObj.size() * sizeof(glm::vec3), &verticesObj[0], GL_STATIC_DRAW);
+    //glEnableVertexAttribArray(0);
+    //// normal attribute
+	//glBufferData(GL_ARRAY_BUFFER, normalsObj.size() * sizeof(glm::vec2), &normalsObj[0], GL_STATIC_DRAW);
+    //glEnableVertexAttribArray(1);
+	// load models
+    // -----------
+    Model ourModel("./sphere.obj");
+
 
     // render loop
     // -----------
@@ -278,6 +320,33 @@ int main()
         // render the cube
         glBindVertexArray(cubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//-----------OBJ------
+        lightingShader.use();
+        lightingShader.setVec3("objectColor", 0.8f, 0.5f, 0.4f);
+        lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+        lightingShader.setVec3("lightPos", lightPos);
+        lightingShader.setVec3("viewPos", camera.Position);
+
+        // view/projection transformations
+        lightingShader.setMat4("projection", projection);
+        lightingShader.setMat4("view", view);
+
+        // world transformation
+        model = glm::mat4(1.0f);
+		glm::vec3 obj3Pos(0.3f, -0.6f, -0.4);
+        model = glm::translate(model, obj3Pos);
+        model = glm::scale(model, glm::vec3(0.02f)); // smaller
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        lightingShader.setMat4("model", model);
+        ourModel.Draw(lightingShader);
+
+
+        //// render the cube
+        //glBindVertexArray(objVAO);
+		//glDrawArrays(GL_TRIANGLES, 0, verticesObj.size() );
+
+
 		//END-------------------------
 
         // also draw the lamp object
