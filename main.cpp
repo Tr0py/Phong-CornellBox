@@ -279,6 +279,11 @@ int main()
         // be sure to activate shader when setting uniforms/drawing objects
         lightingShader.use();
         lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+        lightingShader.setVec3("M_ambient", 1.0f, 0.5f, 0.31f);
+        lightingShader.setVec3("M_diffuse", 1.0f, 0.5f, 0.31f);
+        lightingShader.setVec3("M_specular", 1.0f, 0.5f, 0.31f);
+        //lightingShader.setFloat("shininess", 0.3f);
+
         lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
         lightingShader.setVec3("lightPos", lightPos);
         lightingShader.setVec3("viewPos", camera.Position);
@@ -301,7 +306,12 @@ int main()
 		//START------------------------
         // be sure to activate shader when setting uniforms/drawing objects
         lightingShader.use();
+		//bronze	0.2125	0.1275	0.054	0.714	0.4284	0.18144	0.393548	0.271906	0.166721	0.2
         lightingShader.setVec3("objectColor", 0.2f, 0.7f, 0.31f);
+        lightingShader.setVec3("M_ambient", 0.0215f, 0.1275f, 0.054f);
+        lightingShader.setVec3("M_diffuse", 0.714f, 0.428f, 0.1814f);
+        lightingShader.setVec3("M_specular", 0.393f, 0.2719f, 0.166f);
+        //lightingShader.setFloat("shininess", 0.2f);
         lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
         lightingShader.setVec3("lightPos", lightPos);
         lightingShader.setVec3("viewPos", camera.Position);
@@ -324,6 +334,10 @@ int main()
 		//-----------OBJ------
         lightingShader.use();
         lightingShader.setVec3("objectColor", 0.8f, 0.5f, 0.4f);
+        lightingShader.setVec3("M_ambient", 0.0215f, 0.1745f, 0.0215f);
+        lightingShader.setVec3("M_diffuse", 0.07568f, 0.61424f, 0.07568f);
+        lightingShader.setVec3("M_specular", 0.633f, 0.727f, 0.633f);
+        //lightingShader.setFloat("shininess", 0.6f);
         lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
         lightingShader.setVec3("lightPos", lightPos);
         lightingShader.setVec3("viewPos", camera.Position);
