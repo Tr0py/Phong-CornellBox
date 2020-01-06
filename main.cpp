@@ -27,7 +27,7 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 1.3f));
+Camera camera(glm::vec3(0.0f, 0.0f, 0.9f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -275,10 +275,9 @@ int main()
     // load textures (we now use a utility function to keep the code more organized)
     // -----------------------------------------------------------------------------
     unsigned int diffuseMap = loadTexture("bricks2.jpg");
-    // shader configuration
-    // --------------------
-    lightingShader.use();
-    lightingShader.setInt("material.diffuse", 0);
+    unsigned int specularMap = loadTexture("ironBorder.png");
+    unsigned int diffuseMap2 = loadTexture("wood.png");
+
 
     // second, configure the light's VAO (VBO stays the same; the vertices are the same for the light object which is also a 3D cube)
     unsigned int lightVAO;
@@ -429,12 +428,18 @@ int main()
 		//-------------------TexturedCube-------------------------
         // be sure to activate shader when setting uniforms/drawing objects
         textureShader.use();
+	    // shader configuration
+		// --------------------
+    	textureShader.use();
+    	textureShader.setInt("material.diffuse", 0);
+    	textureShader.setInt("material.specular", 1);
+
         textureShader.setVec3("light.position", lightPos);
         textureShader.setVec3("viewPos", camera.Position);
 
         // light properties
-        textureShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
-        textureShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
+        textureShader.setVec3("light.ambient", 0.3f, 0.3f, 0.3f);
+        textureShader.setVec3("light.diffuse", 0.7f, 0.7f, 0.7f);
         textureShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
         // material properties
@@ -458,11 +463,66 @@ int main()
         // bind diffuse map
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuseMap);
+        // bind specular map
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, specularMap);
+        // bind diffuse2 map
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, diffuseMap2);
+
 
         // render the cube
         glBindVertexArray(TCubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 		//-----------------TexturedCube End--------------------
+
+		//-------------------TexturedCube 2-------------------------
+        // be sure to activate shader when setting uniforms/drawing objects
+        textureShader.use();
+	    // shader configuration
+		// --------------------
+    	textureShader.use();
+    	textureShader.setInt("material.diffuse", 2);
+    	textureShader.setInt("material.specular", 1);
+
+        textureShader.setVec3("light.position", lightPos);
+        textureShader.setVec3("viewPos", camera.Position);
+
+        // light properties
+        textureShader.setVec3("light.ambient", 0.5f, 0.5f, 0.5f);
+        textureShader.setVec3("light.diffuse", 0.9f, 0.9f, 0.9f);
+        textureShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
+        // material properties
+        textureShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+        textureShader.setFloat("material.shininess", 64.0f);
+
+        // view/projection transformations
+        projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        view = camera.GetViewMatrix();
+        textureShader.setMat4("projection", projection);
+        textureShader.setMat4("view", view);
+
+        // world transformation
+        model = glm::mat4(1.0f);
+		glm::vec3 TCube2Pos(-0.4f, -0.57f, 0.27f);
+        model = glm::translate(model, TCube2Pos);
+        model = glm::scale(model, glm::vec3(0.35f)); // smaller
+		model = glm::rotate(model, glm::radians(-60.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        textureShader.setMat4("model", model);
+
+        // bind diffuse map
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, diffuseMap2);
+        // bind specular map
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, specularMap);
+
+
+        // render the cube
+        glBindVertexArray(TCubeVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+		//-----------------TexturedCube2 End--------------------
 
         //// render the cube
         //glBindVertexArray(objVAO);
